@@ -1,13 +1,13 @@
-"""initial migration
+"""install migration
 
-Revision ID: c4f4cea54f07
+Revision ID: 933ca903cc58
 Revises: None
-Create Date: 2016-03-24 22:04:40.782451
+Create Date: 2016-03-25 16:01:16.263338
 
 """
 
 # revision identifiers, used by Alembic.
-revision = 'c4f4cea54f07'
+revision = '933ca903cc58'
 down_revision = None
 
 from alembic import op
