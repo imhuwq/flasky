@@ -1,0 +1,4 @@
+/envs
+/migrations
+/*.sqlite
+/.idea
