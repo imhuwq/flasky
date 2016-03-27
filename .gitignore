@@ -1,4 +1,5 @@
-/migrations
-/*.sqlite
+/envs
 /.idea
+/migrations
 *.pyc
+*.sqlite
