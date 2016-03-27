@@ -2,3 +2,4 @@
 /migrations
 /*.sqlite
 /.idea
+*.pyc
