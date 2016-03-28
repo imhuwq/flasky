@@ -3,17 +3,15 @@
 
 {% block page_content %}
 	<dv class="page-header">
-		<h1>Hello {% if name %} {{ name | capitalize }} {% else %} World {% endif %} !</h1>
-		{% if not known %}
-		<h3>It's nice to meet you.</h3>
-		{% else %}
-		<h3>It's nice to see you again.</h3>
-		{% endif %}
+		<h1>Hello,
+            {% if current_user.is_authenticated %} {{ current_user.name }}
+            {% else %} Stranger
+            {% endif %} !</h1>
 	</dv>
 	<div class="page-body">
 		<p>The local date and time is {{ moment(current_time).format('LLL') }}.</p>
 		<p>That was {{ moment(current_time).fromNow(refresh=True) }}</p>
 
-		{{ wtf.quick_form(form) }}
+{#		{{ wtf.quick_form(form) }}#}
 	</div>
 {% endblock %}
