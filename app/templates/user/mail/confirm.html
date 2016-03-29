@@ -1,7 +1,7 @@
 <p><strong>Dear {{ user.name }}</strong></p>
 <p>Welcome to Flasky !</p>
 <p>To confirm your account please click in the following link:</p>
-<a href="{{ url_for('auth.confirm', token=token,  _external=True) }}">click here to confirm your account</a>
+<a href="{{ url_for('user.confirm', token=token,  _external=True) }}">click here to confirm your account</a>
 <p>Sincerely,</p>
 <p>The Flasky Team</p>
 <p><i>Note: replies to this email address are not monitored.</i></p>

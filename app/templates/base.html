@@ -27,9 +27,11 @@
 			</ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if current_user.is_authenticated %}
-                <li><a href="{{ url_for('auth.logout') }}">Sign Out</a></li>
+                <li><a href="{{ url_for('user.profile') }}">Profile</a></li>
+                <li><a href="{{ url_for('user.logout') }}">Sign Out</a></li>
                 {% else %}
-                <li><a href="{{ url_for('auth.login') }}">Sign In</a></li>
+                <li><a href="{{ url_for('user.register') }}">Sign Up</a></li>
+                <li><a href="{{ url_for('user.login') }}">Sign In</a></li>
                 {% endif %}
             </ul>
 		</div>

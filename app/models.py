@@ -21,6 +21,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(64), unique=True, index=True)
     name = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
+    password_security = db.Column(db.String(32))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     confirmed = db.Column(db.Boolean, default=False)
 
@@ -44,7 +45,7 @@ class User(UserMixin, db.Model):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
-        except:
+        except Exception:
             return False
         if data.get('confirm') != self.id:
             return False
