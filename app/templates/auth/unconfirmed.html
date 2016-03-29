@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+    <div class="page-header">
+        <h1>Suspended Account Confirmation</h1>
+    </div>
+    <div class="page-body">
+        <p>You have not confirmed your account yet.</p>
+        <p>For further actions, please check your email to confirm your account.</p>
+        <p>Didn't receive an email? click <a href="{{ url_for('auth.resend_confirmation') }}">HERE</a> to resend it again.</p>
+    </div>
+{% endblock %}
