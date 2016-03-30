@@ -9,12 +9,12 @@
         <tr>
             <th>Email</th>
             <td>{{ user.email }}</td>
-            <td><a href="{{ url_for('user.change_email') }}">change your email</a></td>
+            <td><a href="{{ url_for('user.update', action='chemail') }}">change your email</a></td>
         </tr>
         <tr>
             <th>Name</th>
             <td>{{ user.name }}</td>
-            <td><a href="{{ url_for('user.change_name') }}">change your nickname</a></td>
+            <td><a href="{{ url_for('user.update', action='chname') }}">change your nickname</a></td>
         </tr>
         <tr>
             <th>Role</th>
@@ -24,7 +24,7 @@
         <tr>
             <th>Security</th>
             <td>{{ user.password_security }}</td>
-            <td><a href="{{ url_for('user.change_password') }}">change your password</a></td>
+            <td><a href="{{ url_for('user.update', action='chpasswd') }}">change your password</a></td>
         </tr>
     </table>
 

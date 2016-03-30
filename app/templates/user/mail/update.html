@@ -1,0 +1,11 @@
+<p><strong>Dear {{ user.name }}</strong></p>
+
+{% if action == 'chemail' %}
+<p>You are updating the email of your Flasky account!</p>
+<p>To confirm your update please click in the following link:</p>
+<a href="{{ url_for('user.confirm', token=token,  action=action, _external=True) }}">click here to updating your email</a>
+{% endif %}
+
+<p>Sincerely,</p>
+<p>The Flasky Team</p>
+<p><i>Note: replies to this email address are not monitored.</i></p>

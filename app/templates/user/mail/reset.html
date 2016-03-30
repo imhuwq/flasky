@@ -1,0 +1,7 @@
+<p><strong>Dear {{ user.name }}</strong></p>
+<p>You are resetting your password !</p>
+<p>To continue please click in the following link:</p>
+<a href="{{ url_for('user.reset_confirm', action=action, token=token,  _external=True) }}">click here to continue</a>
+<p>Sincerely,</p>
+<p>The Flasky Team</p>
+<p><i>Note: replies to this email address are not monitored.</i></p>

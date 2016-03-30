@@ -1,0 +1,11 @@
+Dear {{ user.name }},
+
+{% if action == 'chemail' %}
+You are updating the email of your Flasky account!
+To confirm your account please click in the following link:
+{{ url_for('user.confirm', token=token, action=action, _external=True) }}
+{% endif %}
+
+Sincerely,
+The Flasky Team
+Note: replies to this email address are not monitored.

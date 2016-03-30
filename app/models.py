@@ -24,6 +24,7 @@ class User(UserMixin, db.Model):
     password_security = db.Column(db.String(32))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     confirmed = db.Column(db.Boolean, default=False)
+    suspend_email = db.Column(db.String(64), unique=True)
 
     @property
     def password(self):
@@ -38,7 +39,7 @@ class User(UserMixin, db.Model):
 
     def generate_confirmation_token(self, expiration=1200):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        token = s.dumps({'confirm':self.id})
+        token = s.dumps({'confirm': self.id})
         return token
 
     def confirm_token(self, token):

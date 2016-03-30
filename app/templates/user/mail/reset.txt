@@ -1,0 +1,7 @@
+Dear {{ user.name }},
+You are resetting your password !!
+To continue please click in the following link:
+{{ url_for('user.reset_confirm', action=action, token=token,  _external=True) }}
+Sincerely,
+The Flasky Team
+Note: replies to this email address are not monitored.

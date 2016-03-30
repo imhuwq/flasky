@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}
+    {% if action == 'chemail' %}  Flasky - Updating Email
+    {% elif action == 'chname' %} Flask - Updating Name
+    {% elif action == 'chpasswd' %} Flasky - Updating Password
+    {% endif %}
+{% endblock %}
+
+{% block page_content %}
+    {% if action == 'chemail' %}
+        <h1 class="page-header">
+            Updating Email
+        </h1>
+    {% elif action == 'chname' %}
+        <h1 class="page-header">
+            Updating Name
+        </h1>
+    {% elif action == 'chpasswd' %}
+        <h1 class="page-header">
+            Updating Password
+        </h1>
+    {% endif %}
+    {{ wtf.quick_form(form) }}
+{% endblock %}
+
+
+
