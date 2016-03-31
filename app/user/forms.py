@@ -13,13 +13,13 @@ class LoginFrom(Form):
 
 class RegisterForm(Form):
     email = StringField('Email used to log in', validators=[DataRequired(), Length(1, 64), Email()])
+    password = PasswordField('Password used to log in', validators=[DataRequired(),
+                                                                    Length(6, 18, message='Password should be'
+                                                                                          ' 6-18 at length')])
     name = StringField('Nickname makes you unique', validators=[DataRequired(), Length(3, 12),
                                                                 Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
                                                                        'Username contains only letters,'
                                                                        'numbers and dots and underscores')])
-    password = PasswordField('Password used to log in', validators=[DataRequired(),
-                                                                    Length(6, 18, message='Password should be'
-                                                                                          ' 6-18 at length')])
     submit = SubmitField('Register')
 
     def validate_email(self, field):

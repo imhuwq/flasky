@@ -16,7 +16,6 @@ def login():
         if u is None:
             flash('You have not registered. Would you register now?')
             session['temp_email'] = form.email.data
-            session['temp_passwd'] = form.password.data
             return redirect(url_for('user.register'))
         elif u.verify_password(form.password.data):
             login_user(u, form.remember.data)
@@ -57,13 +56,17 @@ def check_password_security(passwd):
 @user.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
-    form.email.data, session['temp_email'] = session.get('temp_email'), None
+    # TODO: test if session is every user separately
+    if session.get('temp_email'):
+        form.email.data = session.get('temp_email')
     if form.validate_on_submit():
+        session['temp_email'] = None
         security = check_password_security(form.password.data)
         u = User(email=form.email.data,
                  name=form.name.data,
                  password=form.password.data,
-                 password_security = security)
+                 password_security=security)
+        print(u.role)
         token = u.generate_confirmation_token()
         send_email(form.email.data, 'Account Confirmation', 'user/mail/confirm',
                    user=u, token=token)
@@ -133,7 +136,7 @@ def profile():
 @user.route('/privileges')
 @login_required
 def privileges():
-    return
+    return "This page is left for further design."
 
 
 @user.route('/update/<action>', methods=['GET', 'POST'])
