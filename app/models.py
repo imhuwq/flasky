@@ -57,6 +57,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     password_security = db.Column(db.String(32))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
     confirmed = db.Column(db.Boolean, default=False)
     suspend_email = db.Column(db.String(64), unique=True)
     full_name = db.Column(db.String(64))
@@ -138,3 +139,11 @@ class AnonymousUser(AnonymousUserMixin):
     def is_administrator(self):
         return False
 login_manager.anonymous_user = AnonymousUser
+
+
+class Post(db.Model):
+    __tablename__ = 'posts'
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))

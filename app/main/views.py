@@ -2,14 +2,24 @@ from flask import render_template, abort, flash, url_for, redirect
 from . import main
 from flask.ext.login import login_required, current_user
 from ..decorators import permission_required, admin_required
-from ..models import User, Permission, datetime
-from .forms import AdminChprofileForm
+from ..models import User, Permission, datetime, Post
+from .forms import AdminChprofileForm, PostForm
 from .. import db
 
 
-@main.route('/')
+@main.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html', current_time=datetime.utcnow())
+    form = PostForm()
+    if current_user.can(Permission.WRITE_ARTICLES) and\
+       form.validate_on_submit():
+        post = Post(
+                    body=form.body.data,
+                    author=current_user._get_current_object()
+                    )
+        db.session.add(post)
+        return redirect(url_for('main.index'))
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    return render_template('index.html', form=form, posts=posts)
 
 
 @main.route('/user/profile/<name>')

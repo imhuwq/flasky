@@ -35,3 +35,8 @@ class AdminChprofileForm(Form):
            and len(User.query.filter_by(role_id=3).all()) == 1:
             raise ValidationError('At least one Admin is required to run this site.')
     submit = SubmitField('Update')
+
+
+class PostForm(Form):
+    body = TextAreaField('What\'s on your mind ?')
+    submit = SubmitField('Publish')
