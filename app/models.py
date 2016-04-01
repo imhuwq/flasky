@@ -1,8 +1,10 @@
 from . import db, login_manager
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask.ext.login import UserMixin, AnonymousUserMixin
-from flask import current_app
+from flask import current_app, request
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from datetime import datetime
+import hashlib
 
 
 class Permission:
@@ -57,6 +59,11 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     confirmed = db.Column(db.Boolean, default=False)
     suspend_email = db.Column(db.String(64), unique=True)
+    full_name = db.Column(db.String(64))
+    location = db.Column(db.String(64))
+    about_me = db.Column(db.Text())
+    sign_up_since = db.Column(db.DateTime(), default=datetime.utcnow)
+    last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -100,6 +107,19 @@ class User(UserMixin, db.Model):
 
     def is_administrator(self):
         return self.can(Permission.ADMINISTER)
+
+    def ping(self):
+        self.last_seen = datetime.utcnow()
+        db.session.add(self)
+
+    def gravatar(self, size=100, default='identicon', rating='g'):
+        if request.is_secure:
+            url = 'https://www.gravatar.com/avatar'
+        else:
+            url = 'http://www.gravatar.com/avatar'
+        ghash = hashlib.md5(self.email.encode('utf8')).hexdigest()
+        return '{url}/{ghash}?s={size}&d={default}&r={rating}'\
+            .format(url=url, ghash=ghash, size=size, default=default, rating=rating)
 
     def __repr__(self):
         return '<User %r>' % self.name

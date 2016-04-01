@@ -1,7 +1,8 @@
 from flask.ext.wtf import Form
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, Email, Length, EqualTo, Regexp, ValidationError
-from ..models import User
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField
+from wtforms.validators import DataRequired, Email, Length, Regexp, ValidationError
+from ..models import User, Role
+from flask.ext.login import current_user
 
 
 class LoginFrom(Form):
@@ -42,18 +43,17 @@ class ChemailForm(Form):
     submit = SubmitField('Update')
 
 
-class ChnameForm(Form):
-    old_name = StringField('Old Name', validators=[DataRequired(), Length(3, 12),
-                                                   Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
-                                                          'Username contains only letters, '
-                                                          'numbers and dots and underscores')])
-    new_name = StringField('New Name', validators=[DataRequired(), Length(3, 12),
+class ChprofileForm(Form):
+    name = StringField('Nick Name', validators=[DataRequired(), Length(3, 12),
                                                    Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
                                                           'Username contains only letters,'
                                                           'numbers and dots and underscores')])
+    full_name = StringField('Full Name', validators=[Length(0, 64)])
+    location = StringField('Location', validators=[Length(0, 64)])
+    about_me = TextAreaField('About me')
 
-    def validate_new_name(self, field):
-        if User.query.filter_by(name=field.data).first():
+    def validate_name(self, field):
+        if field.data != current_user.name and User.query.filter_by(name=field.data).first():
             raise ValidationError('This name is in use. Please choose another name.')
 
     submit = SubmitField('Update')

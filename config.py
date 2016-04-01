@@ -8,7 +8,7 @@ class Config:
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     FLASKY_MAIL_SUBJECT_PREFIX = '[FLASKY]'
-    FLASKY_MAIL_SENDER = 'Flasky Admin <admin@flasky.com>'
+    FLASKY_MAIL_SENDER = 'Flasky Admin <imhuwq@163.com>'
     FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
 
     @staticmethod

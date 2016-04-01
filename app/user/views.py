@@ -1,8 +1,9 @@
-from flask import render_template, redirect, request, url_for, flash, session
+from flask import render_template, redirect, request, url_for, flash
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from . import user
 from ..models import User
-from .forms import LoginFrom, RegisterForm, ChemailForm, ChnameForm, ChpasswdForm, ResetForm, ResetPasswordForm
+from .forms import LoginFrom, RegisterForm, ChemailForm, ChprofileForm,\
+    ChpasswdForm, ResetForm, ResetPasswordForm
 from .. import db
 from .._email import send_email
 import re
@@ -15,8 +16,7 @@ def login():
         u = User.query.filter_by(email=form.email.data).first()
         if u is None:
             flash('You have not registered. Would you register now?')
-            session['temp_email'] = form.email.data
-            return redirect(url_for('user.register'))
+            return redirect(url_for('user.register', email=form.email.data))
         elif u.verify_password(form.password.data):
             login_user(u, form.remember.data)
             return redirect(request.args.get('next') or url_for('main.index'))
@@ -56,17 +56,12 @@ def check_password_security(passwd):
 @user.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
-    # TODO: test if session is every user separately
-    if session.get('temp_email'):
-        form.email.data = session.get('temp_email')
     if form.validate_on_submit():
-        session['temp_email'] = None
         security = check_password_security(form.password.data)
         u = User(email=form.email.data,
                  name=form.name.data,
                  password=form.password.data,
                  password_security=security)
-        print(u.role)
         token = u.generate_confirmation_token()
         send_email(form.email.data, 'Account Confirmation', 'user/mail/confirm',
                    user=u, token=token)
@@ -76,6 +71,7 @@ def register():
         flash('You have successfully signed up.'
               'But you should confirm your account in your email')
         return redirect(url_for('main.index'))
+    form.email.data = request.args.get('email')
     return render_template('user/register.html', form=form)
 
 
@@ -97,16 +93,17 @@ def confirm(action, token):
             db.add(u)
             db.commit()
             flash('You have successfully updated your email.')
-            return redirect(url_for('user.profile'))
+            return redirect(url_for('main.profile', name=u.name))
     return url_for('main.index')
 
 
 @user.before_app_request
 def before_request():
-    if current_user.is_authenticated\
-            and not current_user.confirmed\
-            and request.endpoint[:5] != 'user.':
-        return redirect(url_for('user.unconfirmed'))
+    if current_user.is_authenticated:
+        current_user.ping()
+        if not current_user.confirmed\
+                and request.endpoint[:5] != 'user.':
+            return redirect(url_for('user.unconfirmed'))
 
 
 @user.route('/unconfirmed')
@@ -126,13 +123,6 @@ def resend_confirmation():
     return redirect(url_for('main.index'))
 
 
-@user.route('/profile')
-@login_required
-def profile():
-    u = current_user
-    return render_template('user/profile.html', user=u)
-
-
 @user.route('/privileges')
 @login_required
 def privileges():
@@ -143,7 +133,22 @@ def privileges():
 @login_required
 def update(action):
     u = current_user
-    if action == 'chemail':
+    if action == 'chprofile':
+        form = ChprofileForm()
+        if form.validate_on_submit():
+            u.name = form.name.data
+            u.full_name = form.full_name.data
+            u.location = form.location.data
+            u.about_me = form.about_me.data
+            db.session.add(u)
+            db.session.commit()
+            flash('You have updated your profile')
+            return redirect(url_for('main.profile', name=u.name))
+        form.name.data = u.name
+        form.full_name.data = u.full_name
+        form.location.data = u.location
+        form.about_me.data = u.about_me
+    elif action == 'chemail':
         form = ChemailForm()
         form.old_email.data = u.email
         if form.validate_on_submit():
@@ -157,16 +162,7 @@ def update(action):
             db.session.add(u)
             db.session.commit()
             flash('Please check your new email to confirm this update')
-            return redirect(url_for('user.profile'))
-    elif action == 'chname':
-        form = ChnameForm()
-        form.old_name.data = u.name
-        if form.validate_on_submit():
-            u.name = form.new_name.data
-            db.session.add(u)
-            db.session.commit()
-            flash('You have successfully changed your name.')
-            return redirect(url_for('user.profile'))
+            return redirect(url_for('main.profile', name=u.name))
     elif action == 'chpasswd':
         form = ChpasswdForm()
         if form.validate_on_submit():
@@ -174,7 +170,7 @@ def update(action):
             db.session.add(u)
             db.session.commit()
             flash('You have successfully changed your password.')
-            return redirect(url_for('user.profile'))
+            return redirect(url_for('main.profile', name=u.name))
     return render_template('user/update.html', action=action, form=form)
 
 

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %} Flasky - User List {% endblock %}
+
+{% block page_content %}
+    <div class="page-header">
+        <h1>User List</h1>
+    </div>
+    <table class="table">
+        <tr>
+            <th>User ID</th>
+            <th>User Name</th>
+            <th>User Email</th>
+            <th>User Location</th>
+            <th>User Role</th>
+            <th>User Activity</th>
+            <th>Manage</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.location }}</td>
+            <td>{{ user.role.name }}</td>
+            <td>{{ moment(user.last_seen).format('LLL') }}</td>
+            <td><a href="{{ url_for('main.admin_user', u_id=user.id) }}">Edit</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

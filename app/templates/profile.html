@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>{{ user.name }}</h1>
+</div>
+<div>
+    <img src="{{ user.gravatar(size=256) }}" alt="" class="img-rounded profile-thumbnail">
+    {% if user.name or user.location %}
+        <p>
+            {% if user.full_name %}
+                {{ user.full_name }}
+            {% endif %}
+            {% if user.location %}
+                From <a href="http://maps.google.com/?q={{ user.location }}">{{ user.location }}</a>
+            {% endif %}
+        </p>
+    {% endif %}
+        <p>{{ user.role.name }} of Flasky</p>
+    {% if current_user.is_administrator() %}
+        <p>
+            <a href="mailto:{{ user.email }}">{{ user.email }}</a>
+        </p>
+    {% endif %}
+
+    {% if user.about_me %}
+        <p>{{ user.about_me }}</p>
+    {% endif %}
+
+    <p>Member since {{ moment(user.sign_up_since).format('L') }}.</p>
+    <p>Last seen {{ moment(user.last_seen).fromNow() }}.</p>
+
+    {% if current_user == user or current_user.is_administrator() %}
+        <a href="{{ url_for('user.update', action='chprofile') }}" class="btn btn-danger">Update Profile</a>
+    {% endif %}
+</div>
+{% endblock %}

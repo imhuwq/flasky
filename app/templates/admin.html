@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %} Flasky - Admin Panel {% endblock %}
+
+{% block page_content %}
+    <div class="page-header">
+        <h1>Admin Panel</h1>
+    </div>
+
+    <ul>
+        <li><a href="{{ url_for('main.user_list') }}">User List</a></li>
+        <li><a href="{{ url_for('main.index') }}">Post List</a></li>
+        <li><a href="{{ url_for('main.index') }}">Temp</a></li>
+    </ul>
+{% endblock %}
