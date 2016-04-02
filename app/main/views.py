@@ -1,8 +1,8 @@
-from flask import render_template, abort, flash, url_for, redirect
+from flask import render_template, abort, flash, url_for, redirect, request, current_app
 from . import main
 from flask.ext.login import login_required, current_user
 from ..decorators import permission_required, admin_required
-from ..models import User, Permission, datetime, Post
+from ..models import User, Permission, Post
 from .forms import AdminChprofileForm, PostForm
 from .. import db
 
@@ -18,16 +18,61 @@ def index():
                     )
         db.session.add(post)
         return redirect(url_for('main.index'))
-    posts = Post.query.order_by(Post.timestamp.desc()).all()
-    return render_template('index.html', form=form, posts=posts)
+    page = request.args.get('page', 1, type=int)
+    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
+        page, per_page=current_app.config['FLASKY_POST_PER_PAGE'],
+        error_out=False
+    )
+    posts = pagination.items
+    return render_template('index.html', form=form, posts=posts,
+                           pagination=pagination)
 
 
-@main.route('/user/profile/<name>')
+@main.route('/user/<name>/profile/')
 def profile(name):
     u = User.query.filter_by(name=name).first()
     if u is None:
         abort(404)
     return render_template('profile.html', user=u)
+
+
+@main.route('/user/<name>/posts')
+def posts(name):
+    u = User.query.filter_by(name=name).first()
+    if u is None:
+        abort(404)
+    page = request.args.get('page', 1, type=int)
+    pagination = Post.query.filter_by(author=u).order_by(Post.timestamp.desc()).paginate(
+        page, per_page=current_app.config['FLASKY_POST_PER_PAGE'],
+        error_out=False
+    )
+    posts = pagination.items
+    return render_template('posts.html', user=u, posts=posts,
+                           pagination=pagination)
+
+
+@main.route('/post/<int:id>')
+@main.route('/post/<int:id>/read')
+def post_read(id):
+    post = Post.query.get_or_404(id)
+    return render_template('post_read.html', posts=[post])
+
+
+@main.route('/post/<int:id>/edit')
+@login_required
+def post_edit(id):
+    post = Post.query.get_or_404(id)
+    if current_user != post.author and \
+            not current_user.can(Permission.ADMINISTER):
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.body = form.body.data
+        db.session.add(post)
+        flash('Post has been republished.')
+        return redirect(url_for('main.post_read', id=post.id))
+    form.body.data = post.body
+    return render_template('post_edit.html', form=form)
 
 
 @main.route('/admin')
@@ -81,3 +126,8 @@ def admin_user(u_id):
 @permission_required(Permission.MODERATE_COMMENTS)
 def moderator():
     return "This is a moderator only page"
+
+
+@main.errorhandler(403)
+def forbidden(e):
+    return render_template('403.html'), 403

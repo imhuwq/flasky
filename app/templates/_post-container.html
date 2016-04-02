@@ -1,0 +1,44 @@
+<div class="posts-container">
+    <ul class="posts">
+        {% for post in posts %}
+            <li class="post">
+                <div class="post-author-thumbnail">
+                    <a href="{{ url_for('main.profile', name=post.author.name) }}">
+                        <img src="{{ post.author.gravatar(size=40) }}" alt="Author Gravatar" title="Author Profile"
+                             class="img-rounded profile-thumbnail">
+                    </a>
+                </div>
+                <div class="post-content">
+                    <div class="post-date">
+                        {{ moment(post.timestamp).fromNow() }}
+                    </div>
+                    <div class="post-author">
+                        <a href="{{ url_for('main.posts', name=post.author.name) }}" title="All Posts by this Author">
+                            {{ post.author.name }}
+                        </a>
+                    </div>
+                    <div class="post-body">
+                        {% if post.body_html %} {{ post.body_html | safe }}
+                        {% else %} {{ post.body }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="post-footer">
+                    <a href="{{ url_for('main.post_read', id=post.id) }}">
+                        <span class="label label-default">Permalink</span>
+                    </a>
+                    {% if current_user == post.author %}
+                    <a href="{{ url_for('main.post_edit', id=post.id) }}">
+                        <span class="label label-default">Edit</span>
+                    </a>
+                    {% elif current_user.is_administrator() %}
+                        <a href="{{ url_for('main.post_edit', id=post.id) }}">
+                            <span class="label label-default"> Edit [Admin]</span>
+                        </a>
+                    {% endif %}
+                </div>
+
+            </li>
+        {% endfor %}
+    </ul>
+</div>

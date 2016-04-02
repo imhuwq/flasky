@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+
+{% block page_content %}
+    <div class="page-header">
+        <h1>Post by {{ user.name }}</h1>
+    </div>
+
+    <div class="page-body">
+        {% include "_post-container.html" %}
+    </div>
+
+    <div class="post-pagination">
+        {{ macros.pagination_widgt(pagination, 'main.posts', name=user.name) }}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
+{% endblock %}

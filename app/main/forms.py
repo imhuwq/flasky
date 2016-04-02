@@ -1,5 +1,6 @@
 from flask.ext.wtf import Form
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, TextAreaField, SelectField
+from flask.ext.pagedown.fields import PageDownField
+from wtforms import StringField, SubmitField, BooleanField, TextAreaField, SelectField
 from wtforms.validators import DataRequired, Length, Email, Regexp, ValidationError
 from ..models import User, Role
 
@@ -38,5 +39,5 @@ class AdminChprofileForm(Form):
 
 
 class PostForm(Form):
-    body = TextAreaField('What\'s on your mind ?')
+    body = PageDownField('What\'s on your mind ?', validators=[DataRequired()])
     submit = SubmitField('Publish')
