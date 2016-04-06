@@ -1,4 +1,4 @@
-from flask import render_template, abort, flash, url_for, redirect, request, current_app
+from flask import render_template, abort, flash, url_for, redirect, request, current_app, make_response
 from . import main
 from flask.ext.login import login_required, current_user
 from ..decorators import permission_required, admin_required
@@ -18,13 +18,25 @@ def index():
                     )
         db.session.add(post)
         return redirect(url_for('main.index'))
+    show_followed = False
+    show_mine = False
+    if current_user.is_authenticated:
+        show_followed = bool(request.cookies.get('show_followed', ''))
+        show_mine = bool(request.cookies.get('show_mine', ''))
+    if show_followed:
+        query = current_user.followed_posts
+    elif show_mine:
+        query = current_user.posts
+    else:
+        query = Post.query
     page = request.args.get('page', 1, type=int)
-    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
+    pagination = query.order_by(Post.timestamp.desc()).paginate(
         page, per_page=current_app.config['FLASKY_POST_PER_PAGE'],
         error_out=False
     )
     posts = pagination.items
     return render_template('index.html', form=form, posts=posts,
+                           show_followed=show_followed, show_mine=show_mine,
                            pagination=pagination)
 
 
@@ -34,6 +46,79 @@ def profile(name):
     if u is None:
         abort(404)
     return render_template('profile.html', user=u)
+
+
+@main.route('/user/<name>/follow/<uname>')
+@login_required
+@permission_required(Permission.FOLLOW)
+def follow(name, uname):
+    u = User.query.filter_by(name=uname).first()
+    if u is None:
+        flash('Invalid User')
+        return redirect(request.referrer or url_for('main.index'))
+    if u == current_user:
+        flash('You cannot follow yourself')
+        return redirect(request.referrer or url_for('main.index'))
+    elif current_user.is_following(u):
+        flash('You are already following this user')
+        return redirect(request.referrer or url_for('main.profile', name=u.name))
+    current_user.follow(u)
+    flash('You are now following %s' % u.name)
+    return redirect(request.referrer or url_for('main.profile', name=u.name))
+
+
+@main.route('/user/<name>/unfollow/<uname>')
+@login_required
+@permission_required(Permission.FOLLOW)
+def unfollow(name, uname):
+    u = User.query.filter_by(name=uname).first()
+    if u is None:
+        flash('Invalid User')
+        return redirect(request.referrer or url_for('main.index'))
+    elif not current_user.is_following(u):
+        flash('You are not following this user')
+        return redirect(request.referrer or url_for('main.profile', name=u.name))
+    current_user.unfollow(u)
+    flash('You are now unfollowing %s' % u.name)
+    return redirect(request.referrer or url_for('main.profile', name=u.name))
+
+
+@main.route('/user/<name>/profile/follower')
+def follower(name):
+    u = User.query.filter_by(name=name).first()
+    if u is None:
+        flash('Invalid user')
+        return redirect(url_for('main.index'))
+    page = request.args.get('page', 1, type=int)
+    pagination = u.follower.paginate(
+        page, per_page=current_app.config['FLASKY_FOLLOWERS_PER_PAGE'],
+        error_out=False)
+    follows = [{'user': item.follower, 'timestamp': item.timestamp}
+               for item in pagination.items]
+    return render_template('follower.html', user=u,
+                           title='Followers of',
+                           endpoint='main.follower',
+                           pagination=pagination,
+                           follows=follows)
+
+
+@main.route('/user/<name>/profile/followed')
+def followed(name):
+    u = User.query.filter_by(name=name).first()
+    if u is None:
+        flash('Invalid user')
+        return redirect(url_for('main.index'))
+    page = request.args.get('page', 1, type=int)
+    pagination = u.followed.paginate(
+        page, per_page=current_app.config['FLASKY_FOLLOWEDS_PER_PAGE'],
+        error_out=False)
+    follows = [{'user': item.followed, 'timestamp': item.timestamp}
+               for item in pagination.items]
+    return render_template('followed.html', user=u,
+                           title='Followed by',
+                           endpoint='main.followed',
+                           pagination=pagination,
+                           follows=follows)
 
 
 @main.route('/user/<name>/posts')
@@ -51,14 +136,41 @@ def posts(name):
                            pagination=pagination)
 
 
-@main.route('/post/<int:id>')
+@main.route('/posts/all')
+@login_required
+def all_posts():
+    resp = make_response(redirect(url_for('main.index')))
+    resp.set_cookie('show_followed', '', max_age=30*24*60*60)
+    resp.set_cookie('show_mine', '', max_age=30 * 24 * 60 * 60)
+    return resp
+
+
+@main.route('/posts/followed')
+@login_required
+def followed_posts():
+    resp = make_response(redirect(url_for('main.index')))
+    resp.set_cookie('show_followed', '1', max_age=30*24*60*60)
+    resp.set_cookie('show_mine', '', max_age=30 * 24 * 60 * 60)
+    return resp
+
+
+@main.route('/posts/mine')
+@login_required
+def my_posts():
+    resp = make_response(redirect(url_for('main.index')))
+    resp.set_cookie('show_mine', '1', max_age=30*24*60*60)
+    resp.set_cookie('show_followed', '', max_age=30 * 24 * 60 * 60)
+    return resp
+
+
 @main.route('/post/<int:id>/read')
+@main.route('/post/<int:id>')
 def post_read(id):
     post = Post.query.get_or_404(id)
     return render_template('post_read.html', posts=[post])
 
 
-@main.route('/post/<int:id>/edit')
+@main.route('/post/<int:id>/edit', methods=['GET', 'POST'])
 @login_required
 def post_edit(id):
     post = Post.query.get_or_404(id)

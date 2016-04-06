@@ -1,0 +1,47 @@
+<div class="page-header">
+<h1>{{ "%s %s" % (title, user.name) }}</h1>
+</div>
+
+<div class="page-body">
+    <div class="follows-container">
+        <table class="table table-responsive follows-table ">
+            <tr class="table">
+                <th>Name</th>
+                <th>Time of Follow</th>
+                <th>Time of Activity</th>
+                <th>Action</th>
+            </tr>
+            {% for f in follows %}
+                <tr>
+                    <td class="follow-name">
+                        <a href="{{ url_for("main.profile", name=f['user'].name) }}">
+                            <img src="{{ f['user'].gravatar(size=50) }}" alt="user gravatar">
+                            <p>{{ f['user'].name }}</p>
+                        </a>
+                    </td>
+                <td class="follow-date">
+                    {{ moment(f['timestamp']).format('LL') }}
+                </td>
+                <td class="follow-last-seen">
+                    {{ moment(f['user'].last_seen).fromNow() }}
+                </td>
+                {% if current_user.is_authenticated %}
+                    <td>
+                        {% if not current_user.is_following(f['user']) %}
+                            <a href="{{ url_for('main.follow',
+                                                   name=current_user.name,
+                                                   uname=f['user'].name) }}"
+                               class="btn btn-primary">Follow&nbsp; &nbsp; </a>
+                        {% else %}
+                            <a href="{{ url_for('main.unfollow',
+                                                   name=current_user.name,
+                                                   uname=f['user'].name) }}"
+                               class="btn btn-primary">Unfollow</a>
+                        {% endif %}
+                    </td>
+                {% endif %}
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>

@@ -51,6 +51,13 @@ class Role(db.Model):
         return '<Role %r>' % self.name
 
 
+class Follow(db.Model):
+    __tablename__ = 'follows'
+    follower_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -67,6 +74,17 @@ class User(UserMixin, db.Model):
     about_me = db.Column(db.Text())
     sign_up_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
+
+    followed = db.relationship('Follow',
+                               foreign_keys=[Follow.follower_id],
+                               backref=db.backref('follower', lazy='joined'),
+                               lazy='dynamic',
+                               cascade='all, delete-orphan')
+    follower = db.relationship('Follow',
+                               foreign_keys=[Follow.followed_id],
+                               backref=db.backref('followed', lazy='joined'),
+                               lazy='dynamic',
+                               cascade='all, delete-orphan')
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -124,6 +142,22 @@ class User(UserMixin, db.Model):
         return '{url}/{ghash}?s={size}&d={default}&r={rating}'\
             .format(url=url, ghash=ghash, size=size, default=default, rating=rating)
 
+    def follow(self, user):
+        if not self.is_following(user):
+            follow = Follow(follower=self, followed=user)
+            db.session.add(follow)
+
+    def unfollow(self, user):
+        follow = self.followed.filter_by(followed_id=user.id).first()
+        if follow:
+            db.session.delete(follow)
+
+    def is_following(self, user):
+        return self.followed.filter_by(followed_id=user.id).first() is not None
+
+    def is_followed_by(self, user):
+        return self.follower.filter_by(follower_id=user.id).first() is not None
+
     @staticmethod
     def generate_fake(count=100):
         from sqlalchemy.exc import IntegrityError
@@ -146,6 +180,12 @@ class User(UserMixin, db.Model):
                 db.session.commit()
             except IntegrityError:
                 db.session.rollback()
+
+    @property
+    def followed_posts(self):
+        return Post.query.join(Follow, Follow.followed_id == Post.author_id)\
+                    .filter(Follow.follower_id == self.id)
+
 
     def __repr__(self):
         return '<User %r>' % self.name

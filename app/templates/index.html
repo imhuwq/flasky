@@ -17,6 +17,20 @@
                 {{ wtf.quick_form(form) }}
             {% endif %}
         </div>
+        <br>
+        <div class="post-nav-tab">
+            <ul class="nav nav-tabs">
+                <li{% if not show_followed and not show_mine %} class="active"{% endif %}>
+                    <a href="{{ url_for('main.all_posts') }}">All</a>
+                </li>
+                <li{% if show_followed %} class="active" {% endif %}>
+                    <a href="{{ url_for('main.followed_posts') }}">Followed</a>
+                </li>
+                <li{% if show_mine %} class="active" {% endif %}>
+                    <a href="{{ url_for('main.my_posts') }}">My Post</a>
+                </li>
+            </ul>
+        </div>
 
         {% include "_post-container.html" %}
 
@@ -27,6 +41,6 @@
 {% endblock %}
 
 {% block scripts %}
-{{ super() }}
-{{ pagedown.include_pagedown() }}
+    {{ super() }}
+    {{ pagedown.include_pagedown() }}
 {% endblock %}
