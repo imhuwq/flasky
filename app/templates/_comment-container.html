@@ -1,0 +1,54 @@
+<div class="comment-container">
+    <ul class="comments">
+        {% for comment in comments %}
+            <li class="comment">
+            <div class="comment-author-thumbnail">
+                <a href="{{ url_for('main.profile', name=comment.author.name) }}">
+                    <img src="{{ comment.author.gravatar(size=40) }}" alt="Commenter Gravatar" title="Commenter Profile"
+                         class="img-rounded profile-thumbnail">
+                </a>
+            </div>
+            <div class="comment-content">
+                <div class="comment-date">
+                    {{ moment(comment.timestamp).fromNow() }}
+                </div>
+                <div class="comment-author">
+                    <a href="{{ url_for('main.profile', name=comment.author.name) }}" title="About this Commenter">
+                        {{ comment.author.name }}
+                    </a>
+                </div>
+                <div class="comment-body">
+                    {% if comment.disabled %}
+                        <p><i>This comment has been disabled by a moderator.</i></p>
+                    {% endif %}
+                    {% if moderate or not comment.disabled %}
+                        {% if comment.body_html %} {{ comment.body_html | safe }}
+                        {% else %} {{ comment.body }}
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="comment-footer">
+                {% if current_user.can(Permission.MODERATE_COMMENTS) %}
+                    {% if comment.disabled %}
+                        <a href="{{ url_for('main.comment_enable', id=comment.id, page=page) }}"
+                           class="btn btn-default btn-xs">Enable</a>
+                    {% else %}
+                        <a href="{{ url_for('main.comment_disable', id=comment.id, page=page) }}"
+                           class="btn btn-danger btn-xs">Disable</a>
+                    {% endif %}
+                {% endif %}
+                {% if current_user == comment.author %}
+                    <a href="{{ url_for('main.comment_edit', id=post.id) }}">
+                        <span class="label label-default">Edit</span>
+                    </a>
+                {% elif current_user.is_administrator() %}
+                    <a href="{{ url_for('main.comment_edit', id=post.id) }}">
+                        <span class="label label-default"> Edit [Admin]</span>
+                    </a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </ul>
+
+</div>

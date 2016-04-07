@@ -2,8 +2,8 @@ from flask import render_template, abort, flash, url_for, redirect, request, cur
 from . import main
 from flask.ext.login import login_required, current_user
 from ..decorators import permission_required, admin_required
-from ..models import User, Permission, Post
-from .forms import AdminChprofileForm, PostForm
+from ..models import User, Permission, Post, Comment
+from .forms import AdminChprofileForm, PostForm, CommentForm
 from .. import db
 
 
@@ -163,11 +163,26 @@ def my_posts():
     return resp
 
 
-@main.route('/post/<int:id>/read')
-@main.route('/post/<int:id>')
+@main.route('/post/<int:id>/read', methods=['GET', 'POST'])
+@main.route('/post/<int:id>/comment', methods=['GET', 'POST'])
+@main.route('/post/<int:id>', methods=['GET', 'POST'])
 def post_read(id):
     post = Post.query.get_or_404(id)
-    return render_template('post_read.html', posts=[post])
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment = Comment(body=form.body.data,
+                          author=current_user._get_current_object(),
+                          post=post)
+        db.session.add(comment)
+        flash('You comment has been published.')
+        return redirect(url_for('main.post_read', id=post.id, page=1))
+    page = request.args.get('page', 1, type=int)
+    pagination = post.comments.order_by(Comment.timestamp.desc()).paginate(
+                    page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'], error_out=False
+                    )
+    comments = pagination.items
+    return render_template('post_read.html', posts=[post], post=post,
+                           form=form, comments=comments, pagination=pagination)
 
 
 @main.route('/post/<int:id>/edit', methods=['GET', 'POST'])
@@ -185,6 +200,21 @@ def post_edit(id):
         return redirect(url_for('main.post_read', id=post.id))
     form.body.data = post.body
     return render_template('post_edit.html', form=form)
+
+
+@main.route('/comment/<int:id>/edit')
+@login_required
+@permission_required(Permission.COMMENT)
+def comment_edit(id):
+    comment = Comment.get_or_404(id)
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment.body = form.body.data
+        db.session.add(comment)
+        return redirect(request.referrer or
+                        url_for('main.post_read', id=comment.post_id))
+    form.body.data = comment.body
+    return render_template('comment_edit.html', form=form)
 
 
 @main.route('/admin')
@@ -233,11 +263,40 @@ def admin_user(u_id):
     return render_template('edit_user.html', form=form, user=u)
 
 
-@main.route('/moderate')
+@main.route('/comment/moderate')
 @login_required
 @permission_required(Permission.MODERATE_COMMENTS)
-def moderator():
-    return "This is a moderator only page"
+def comment_moderate():
+    page = request.args.get('page', 1, type=int)
+    pagination = Comment.query.order_by(Comment.timestamp.desc()).paginate(
+        page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
+        error_out=False
+    )
+    comments = pagination.items
+    return render_template('comment_moderate.html', comments=comments,
+                           pagination=pagination, page=page)
+
+
+@main.route('/comment/moderate/enable/<int:id>')
+@login_required
+@permission_required(Permission.MODERATE_COMMENTS)
+def comment_enable(id):
+    comment = Comment.query.get_or_404(id)
+    comment.disabled = False
+    db.session.add(comment)
+    return redirect(request.referrer or
+                    url_for('main.comment_moderate', page=request.args.get('page', 1, type=int)))
+
+
+@main.route('/comment/moderate/disable/<int:id>')
+@login_required
+@permission_required(Permission.MODERATE_COMMENTS)
+def comment_disable(id):
+    comment = Comment.query.get_or_404(id)
+    comment.disabled = True
+    db.session.add(comment)
+    return redirect(request.referrer or
+                    url_for('main.comment.moderate', page=request.args.get('page', 1, type=int)))
 
 
 @main.errorhandler(403)

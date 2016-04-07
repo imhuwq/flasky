@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% import "_macros.html" as macros %}
+
+{% block page_content %}
+    <div class="page-header">
+        <h1>Comment Moderator</h1>
+    </div>
+    <div class="page-body">
+        {% set moderate = True %}
+        {% include "_comment-container.html" %}
+        {% if pagination %}
+            <div class="pagination">
+                {{ macros.pagination_widgt(pagination, 'main.comment_moderate') }}
+            </div>
+        {% endif %}
+    </div>
+
+{% endblock %}

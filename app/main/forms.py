@@ -41,3 +41,8 @@ class AdminChprofileForm(Form):
 class PostForm(Form):
     body = PageDownField('What\'s on your mind ?', validators=[DataRequired()])
     submit = SubmitField('Publish')
+
+
+class CommentForm(Form):
+    body = PageDownField('How do you think about this ?', validators=[DataRequired()])
+    submit = SubmitField('Publish')

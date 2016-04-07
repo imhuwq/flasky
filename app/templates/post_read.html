@@ -1,9 +1,30 @@
 {% extends "base.html" %}
-
-{% block title %} Flasky - Post {% endblock %}
+{% import "bootstrap/wtf.html" as wtf %}
 
 {% block page_content %}
+    <div class="page-header">
+        <h1>Reading Post</h1>
+    </div>
+    <div class="page-body">
+        {% include '_post-container.html' %}
 
-{% include '_post-container.html' %}
+        <div class="comment-editor">
+            {% if current_user.can(Permission.COMMENT) %}
+                {{ wtf.quick_form(form) }}
+            {% endif %}
+        </div>
+        <br>
 
+        {% include '_comment-container.html' %}
+
+        <div class="comment-pagination">
+            {{ macros.pagination_widgt(pagination, 'main.post_read', id=post.id) }}
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    {{ pagedown.include_pagedown() }}
 {% endblock %}

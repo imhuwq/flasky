@@ -3,7 +3,7 @@
     margin-right: 3%;
 }
 
-.post-author-thumbnail {
+.post-author-thumbnail, .comment-author-thumbnail {
     float: left;
     margin-right: 5px;
 }
@@ -20,20 +20,20 @@ ul.posts {
     border-top: 1px solid #e0e0e0;
 }
 
-ul.posts li.post {
+ul.posts li.post, ul.comments li.comment {
     padding: 8px;
     border-bottom: 1px solid #e0e0e0;
 }
 
-ul.posts li.post:hover {
+ul.posts li.post:hover, ul.comments li.comment:hover {
     background-color: #f0f0f0;
 }
 
-div.post-date {
+div.post-date, div.comment-date {
     float: right;
 }
 
-div.post-author {
+div.post-author div.comment-author{
     font-weight: bold;
 }
 
@@ -41,7 +41,7 @@ div.post-thumbnail {
     position: absolute;
 }
 
-div.post-content {
+div.post-content, div.comment-content{
     margin-left: 48px;
     min-height: 48px;
 }

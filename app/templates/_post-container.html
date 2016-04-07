@@ -27,6 +27,15 @@
                     <a href="{{ url_for('main.post_read', id=post.id) }}">
                         <span class="label label-default">Permalink</span>
                     </a>
+                    &nbsp;
+                    <a href="{{ url_for('main.post_read', id=post.id) }}">
+                        <span class="label label-primary">{{ post.comments.count() }}
+                            {% if post.comments.count() > 1 %} Comments
+                            {% else %} Comment
+                            {% endif %}
+                        </span>
+                    </a>
+                    &nbsp;
                     {% if current_user == post.author %}
                     <a href="{{ url_for('main.post_edit', id=post.id) }}">
                         <span class="label label-default">Edit</span>
