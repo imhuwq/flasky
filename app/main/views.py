@@ -202,11 +202,14 @@ def post_edit(id):
     return render_template('post_edit.html', form=form)
 
 
-@main.route('/comment/<int:id>/edit')
+@main.route('/comment/<int:id>/edit', methods=['GET', 'POST'])
 @login_required
 @permission_required(Permission.COMMENT)
 def comment_edit(id):
-    comment = Comment.get_or_404(id)
+    comment = Comment.query.get_or_404(id)
+    if current_user != comment.author and\
+            not current_user.can(Permission.ADMINISTER):
+        abort(403)
     form = CommentForm()
     if form.validate_on_submit():
         comment.body = form.body.data

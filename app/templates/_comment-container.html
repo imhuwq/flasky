@@ -39,11 +39,11 @@
                     {% endif %}
                 {% endif %}
                 {% if current_user == comment.author %}
-                    <a href="{{ url_for('main.comment_edit', id=post.id) }}">
+                    <a href="{{ url_for('main.comment_edit', id=comment.id) }}">
                         <span class="label label-default">Edit</span>
                     </a>
                 {% elif current_user.is_administrator() %}
-                    <a href="{{ url_for('main.comment_edit', id=post.id) }}">
+                    <a href="{{ url_for('main.comment_edit', id=comment.id) }}">
                         <span class="label label-default"> Edit [Admin]</span>
                     </a>
                 {% endif %}
