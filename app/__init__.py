@@ -5,7 +5,6 @@ from flask.ext.moment import Moment
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.pagedown import PageDown
 from flask.ext.login import LoginManager
-from flask_wtf.csrf import CsrfProtect
 from config import config
 
 bootstrap = Bootstrap()
@@ -16,7 +15,6 @@ pagedown = PageDown()
 login_manager = LoginManager()
 login_manager.session_protection = 'strong'
 login_manager.login_view = 'user.login'
-csrf = CsrfProtect()
 
 
 def create_app(config_name):
@@ -29,7 +27,6 @@ def create_app(config_name):
     moment.init_app(app)
     db.init_app(app)
     pagedown.init_app(app)
-    csrf.init_app(app)
 
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
@@ -37,5 +34,8 @@ def create_app(config_name):
     from .user import user as auth_blueprint
     app.register_blueprint(auth_blueprint, url_prefix='/user')
     login_manager.init_app(app)
+
+    from .api_1_0 import api as api_1_0_blueprint
+    app.register_blueprint(api_1_0_blueprint, url_prefix='/api/v1.0')
 
     return app

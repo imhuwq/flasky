@@ -31,7 +31,7 @@ def index():
         query = Post.query
     page = request.args.get('page', 1, type=int)
     pagination = query.order_by(Post.timestamp.desc()).paginate(
-        page, per_page=current_app.config['FLASKY_POST_PER_PAGE'],
+        page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
         error_out=False
     )
     posts = pagination.items
@@ -128,7 +128,7 @@ def posts(name):
         abort(404)
     page = request.args.get('page', 1, type=int)
     pagination = Post.query.filter_by(author=u).order_by(Post.timestamp.desc()).paginate(
-        page, per_page=current_app.config['FLASKY_POST_PER_PAGE'],
+        page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
         error_out=False
     )
     posts = pagination.items
