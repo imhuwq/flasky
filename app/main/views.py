@@ -305,3 +305,14 @@ def comment_disable(id):
 @main.errorhandler(403)
 def forbidden(e):
     return render_template('403.html'), 403
+
+
+@main.route('/shutdown')
+def shutdown():
+    if not current_app.testing:
+        abort(404)
+        shutdown = request.environ.get('werkzeug.server.shutdown')
+        if not shutdown:
+            abort(500)
+        shutdown()
+        return 'Shutting down...'
