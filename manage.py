@@ -53,7 +53,7 @@ def profile(length=25, profile_dir=None):
 @manager.command
 def deploy():
     from flask.ext.migrate import upgrade
-    from app.models import Role, User
+    from app.models import Role
 
     upgrade()
     Role.insert_roles()
